@@ -44,7 +44,7 @@ def insertStreak(habit:Habit):
                   {'streaks':habit.streaks,'position':habit.position})
 
 def getAllHabits() -> List[Habit]:
-    #periodicityLogic()
+    periodicityLogic()
     c.execute('select * from habits')
     results = c.fetchall()
     habits = []
@@ -82,7 +82,32 @@ def completeHabit(position):
         c.execute('UPDATE habits SET status =:status,dateCompleted = :dateCompleted  WHERE position =:position',
                     {'position': position,'dateCompleted':datetime.datetime.now(),'status':2})
 
-#def periodicityLogic():
+def periodicityLogic():
+    c.execute('select * from habits')
+    results = c.fetchall()
+    habits = []
+    for result in results:
+        habits.append(Habit(*result))
+    for habit in habits:
+        with conn:
+            if datetime.datetime.now() > habit.datePeriod:
+                status = habit.status
+                position = habit.position
+                datePeriod = habit.datePeriod + datetime.timedelta(days=habit.periodicity)
+                c.execute('UPDATE habits SET datePeriod = :datePeriod WHERE position = :position',{'position':position,'datePeriod':datePeriod})
+                
+                if status == 1:
+                    brokenHabits = habit.brokenHabits
+                    insertStreak(habit)
+                    c.execute("UPDATE habits SET streaks = :streaks  WHERE position = :position",{"position":position,'streaks':0})
+                    c.execute("UPDATE habits SET status = :status WHERE position = :position",{"position":position,'status':3})
+                    c.execute("UPDATE habits SET brokenHabits = :brokenHabits  WHERE position = :position",{"position":position,'brokenHabits':brokenHabits+1})
+                if status == 2:
+                    streaks = habit.streaks
+                    c.execute('UPDATE habits SET status = :status WHERE position = :position',{'position':position,'status':1})
+                    c.execute('UPDATE habits SET dateCompleted = :dateCompleted WHERE position = :position',{'position':position,'dateCompleted':None})
+                    c.execute("UPDATE habits SET streaks = :streaks  WHERE position = :position",{"position":position,'streaks':streaks+1})
+
 
 def dropTables():
     c.execute('DROP table habits')
