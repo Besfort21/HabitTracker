@@ -3,6 +3,7 @@ from rich.console import Console
 from rich.table import Table
 from model import Habit,Streak
 from db import insertHabit,getAllHabits,deleteHabit,completeHabit,getAllStreaks
+from analytics import maxStreakAll,maxStreakHabit,mostStruggle,samePeriodicity
 
 console = Console()
 
@@ -82,7 +83,92 @@ def complete(position: int):
 
 
 
+@app.command(short_help='show max streak')
+def showMaxStreak():
+    max = maxStreakAll()
 
+    console.print("[bold magenta]Max Streak[/bold magenta]!")
+
+    table = Table(show_header=True, header_style="bold blue")
+    table.add_column("Max Streak", min_width=20)
+    table.add_column('Habit Position',min_width=20)
+    for i in max:
+        table.add_row(str(i.streaks),str(i.position+1))
+    console.print(table)
+
+@app.command(short_help='show max Streak for given Habit')
+def showMaxStreakHabit(position: int):
+    max = maxStreakHabit(position)
+
+    console.print("[bold magenta]Max Streak for Given Habit[/bold magenta]!")
+
+    table = Table(show_header=True, header_style="bold blue")
+    table.add_column("Max Streak", min_width=20)
+    table.add_column('Habit Position',min_width=20)
+    for i in max:
+        table.add_row(str(i.streaks),str(i.position+1))
+    console.print(table)
+
+@app.command(short_help='show Habits with same Periodicity')
+def showSamePeriodicity():
+    same = samePeriodicity()
+
+    console.print("[bold magenta]Habits[/bold magenta]!")
+
+    table = Table(show_header=True, header_style="bold blue")
+    table.add_column("#", style="dim", width=6)
+    table.add_column("Habit", min_width=20)
+    table.add_column("Periodicity", min_width=12, justify="right")
+    table.add_column("Done", min_width=12, justify="right")
+    table.add_column("Date added", min_width=20)
+    table.add_column("DatePeriod", min_width=20)
+    table.add_column("DateCompleted",min_width=20)
+    is_done_str = ""
+    periodicity_str = ""
+    for idx, habit in enumerate(same, start=1):
+        if habit.status == 1:
+            is_done_str = "Not Done"
+        if habit.status == 2:
+            is_done_str = "Done"
+        if habit.status == 3:
+            is_done_str = "Broken Habit"
+        if habit.periodicity == 1:
+            periodicity_str = "daily"
+        if habit.periodicity == 7:
+            periodicity_str = "weekly"
+        table.add_row(str(idx), habit.task,periodicity_str, is_done_str,str(habit.dateAdded),str(habit.datePeriod),str(habit.dateCompleted))
+    console.print(table)
+
+@app.command(short_help="Habits you have got most trouble with")
+def showStruggle():
+    struggles = mostStruggle()
+
+    console.print("[bold magenta]Habits[/bold magenta]!")
+
+    table = Table(show_header=True, header_style="bold blue")
+    table.add_column("#", style="dim", width=6)
+    table.add_column("Habit", min_width=20)
+    table.add_column("Periodicity", min_width=12, justify="right")
+    table.add_column("Done", min_width=12, justify="right")
+    table.add_column("Date added", min_width=20)
+    table.add_column("DatePeriod", min_width=20)
+    table.add_column("DateCompleted",min_width=20)
+    table.add_column("BrokenHabits",min_width=20)
+    is_done_str = ""
+    periodicity_str = ""
+    for idx, habit in enumerate(struggles, start=1):
+        if habit.status == 1:
+            is_done_str = "Not Done"
+        if habit.status == 2:
+            is_done_str = "Done"
+        if habit.status == 3:
+            is_done_str = "Broken Habit"
+        if habit.periodicity == 1:
+            periodicity_str = "daily"
+        if habit.periodicity == 7:
+            periodicity_str = "weekly"
+        table.add_row(str(idx), habit.task,periodicity_str, is_done_str,str(habit.dateAdded),str(habit.datePeriod),str(habit.dateCompleted),str(habit.brokenHabits))
+    console.print(table)
 
 
 if __name__ == "__main__":
