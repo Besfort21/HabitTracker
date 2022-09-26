@@ -7,7 +7,7 @@ from model import Habit,Streak
 conn = sqlite3.connect('habits.db',detect_types=sqlite3.PARSE_DECLTYPES)
 c = conn.cursor()
 
-def createTableHabits():
+def createTableHabits(c):
     c.execute("""CREATE TABLE IF NOT EXISTS habits (
             task text,
             periodicity integer,
@@ -20,16 +20,16 @@ def createTableHabits():
             streaks integer
             )""")
 
-def createTableStreaks():
+def createTableStreaks(c):
     c.execute("""CREATE TABLE IF NOT EXISTS streaks (
             streaks integer,
             position integer
             )""")
         
-createTableHabits()
-createTableStreaks()
+createTableHabits(c=c)
+createTableStreaks(c=c)
 
-def insertHabit(habit: Habit):
+def insertHabit(habit: Habit,c):
     c.execute('select count(*) FROM habits')
     count = c.fetchone()[0]
     habit.position = count if count else 0
@@ -38,13 +38,13 @@ def insertHabit(habit: Habit):
         {'task': habit.task, 'periodicity': habit.periodicity,'position':habit.position,'dateAdded': datetime.datetime.now(),'dateCompleted':None,
          'datePeriod':datetime.datetime.now() + timedelta(days=habit.periodicity),'status':1,'brokenHabits': 0,'streaks':0})
 
-def insertStreak(habit:Habit):
+def insertStreak(habit:Habit,c):
     with conn:
         c.execute('INSERT INTO streaks VALUES(:streaks,:position)',
                   {'streaks':habit.streaks,'position':habit.position})
 
-def getAllHabits() -> List[Habit]:
-    periodicityLogic()
+def getAllHabits(c) -> List[Habit]:
+    periodicityLogic(c)
     c.execute('select * from habits')
     results = c.fetchall()
     habits = []
@@ -52,7 +52,7 @@ def getAllHabits() -> List[Habit]:
         habits.append(Habit(*result))
     return habits
         
-def getAllStreaks() -> List[Streak]:
+def getAllStreaks(c) -> List[Streak]:
     c.execute('select * from streaks')
     results = c.fetchall()
     streaks = []
@@ -60,7 +60,7 @@ def getAllStreaks() -> List[Streak]:
         streaks.append(Streak(*result))
     return streaks
 
-def deleteHabit(position):
+def deleteHabit(position,c):
     c.execute('select count(*) from habits')
     count = c.fetchone()[0]
 
@@ -69,20 +69,20 @@ def deleteHabit(position):
         c.execute("DELETE from streaks WHERE position=:position", {"position": position})
 
         for pos in range(position+1, count):
-            change_position(pos, pos-1, False)
+            change_position(pos, pos-1, False,c=c)
 
-def change_position(old_position: int, new_position: int, commit=True):
+def change_position(old_position: int, new_position: int,c, commit=True):
     c.execute('UPDATE habits SET position = :position_new WHERE position = :position_old',
                 {'position_old': old_position, 'position_new': new_position})
     if commit:
         conn.commit()
 
-def completeHabit(position):
+def completeHabit(position,c):
     with conn:
         c.execute('UPDATE habits SET status =:status,dateCompleted = :dateCompleted  WHERE position =:position',
                     {'position': position,'dateCompleted':datetime.datetime.now(),'status':2})
 
-def periodicityLogic():
+def periodicityLogic(c):
     c.execute('select * from habits')
     results = c.fetchall()
     habits = []
@@ -109,7 +109,7 @@ def periodicityLogic():
                     c.execute("UPDATE habits SET streaks = :streaks  WHERE position = :position",{"position":position,'streaks':streaks+1})
 
 
-def dropTables():
+def dropTables(c):
     c.execute('DROP table habits')
     c.execute('DROP table streaks')
 #dropTables()

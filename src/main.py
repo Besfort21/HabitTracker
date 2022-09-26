@@ -2,17 +2,18 @@ import typer
 from rich.console import Console
 from rich.table import Table
 from model import Habit,Streak
-from db import insertHabit,getAllHabits,deleteHabit,completeHabit,getAllStreaks
+from db import insertHabit,getAllHabits,deleteHabit,completeHabit,getAllStreaks,conn
 from analytics import maxStreakAll,maxStreakHabit,mostStruggle,samePeriodicity
 
 console = Console()
 
 app = typer.Typer()
 
+c = conn.cursor()
 
 @app.command(short_help='show all habits')
 def show():
-    habits = getAllHabits()
+    habits = getAllHabits(c)
     console.print("[bold magenta]Habits[/bold magenta]!")
 
     table = Table(show_header=True, header_style="bold blue")
@@ -44,7 +45,7 @@ def show():
 
 @app.command(short_help='show all streaks')
 def showStreaks():
-    streaks = getAllStreaks()
+    streaks = getAllStreaks(c)
     
     console.print("[bold magenta]Streaks[/bold magenta]!")
 
@@ -64,7 +65,7 @@ def add(task: str, periodicity: str):
     elif periodicity.lower() == "weekly":
         periodicity = 7
     habit = Habit(task, periodicity)
-    insertHabit(habit)
+    insertHabit(habit,c)
     show()
 
 
@@ -72,13 +73,13 @@ def add(task: str, periodicity: str):
 def delete(position: int):
     typer.echo(f"deleting {position}")
     # indices in UI begin at 1, but in database at 0
-    deleteHabit(position-1)
+    deleteHabit(position-1,c)
     show()
 
 @app.command(short_help='complete an item')
 def complete(position: int):
     typer.echo(f"complete {position}")
-    completeHabit(position-1)
+    completeHabit(position-1,c)
     show()
 
 
