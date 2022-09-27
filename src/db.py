@@ -69,9 +69,9 @@ def deleteHabit(position,c):
         c.execute("DELETE from streaks WHERE position=:position", {"position": position})
 
         for pos in range(position+1, count):
-            change_position(pos, pos-1, False,c=c)
+            change_position(pos, pos-1, False)
 
-def change_position(old_position: int, new_position: int,c, commit=True):
+def change_position(old_position: int, new_position: int, commit=True):
     c.execute('UPDATE habits SET position = :position_new WHERE position = :position_old',
                 {'position_old': old_position, 'position_new': new_position})
     if commit:
