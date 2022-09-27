@@ -11,6 +11,7 @@ app = typer.Typer()
 
 c = conn.cursor()
 
+#show all Habits / Main Table
 @app.command(short_help='show all habits')
 def show():
     habits = getAllHabits(c)
@@ -42,7 +43,7 @@ def show():
         table.add_row(str(idx), habit.task,periodicity_str, is_done_str,str(habit.dateAdded),str(habit.datePeriod),str(habit.dateCompleted))
     console.print(table)
 
-
+#Table for Streaks
 @app.command(short_help='show all streaks')
 def showStreaks():
     streaks = getAllStreaks(c)
@@ -72,7 +73,7 @@ def add(task: str, periodicity: str):
 @app.command(short_help='delete an item')
 def delete(position: int):
     typer.echo(f"deleting {position}")
-    # indices in UI begin at 1, but in database at 0
+    # indices in Table begin at 1, but in database at 0
     deleteHabit(position-1,c)
     show()
 
@@ -82,7 +83,7 @@ def complete(position: int):
     completeHabit(position-1,c)
     show()
 
-
+#Tables for the Analytics module ------------------------------
 
 @app.command(short_help='show max streak')
 def showMaxStreak():

@@ -83,6 +83,20 @@ def completeHabit(position,c):
                     {'position': position,'dateCompleted':datetime.datetime.now(),'status':2})
 
 def periodicityLogic(c):
+    """
+    Function Implementing the Periodicity Logic
+
+    First select all habits and store them in a list.
+    Then loop through the habits.
+    If the current date is larger than the calculated datePeriod,actions depending on the habit status will be performed.
+    But before that independed on the status the new datePeriod will be calculated and updated.
+
+    If the habits is not completed status = 1, the streak counter will be saved in the streak table and then reseted.
+    After that the status will be changed to broken habits status = 3 and the brokenhabits counter will be incremented by one.
+
+    If the habit is completed the status will be changed to not Done, the dateCompleted will be set to None and the streak counter will be incremented by one.
+
+    """
     c.execute('select * from habits')
     results = c.fetchall()
     habits = []
@@ -98,7 +112,7 @@ def periodicityLogic(c):
                 
                 if status == 1:
                     brokenHabits = habit.brokenHabits
-                    insertStreak(habit)
+                    insertStreak(habit,c)
                     c.execute("UPDATE habits SET streaks = :streaks  WHERE position = :position",{"position":position,'streaks':0})
                     c.execute("UPDATE habits SET status = :status WHERE position = :position",{"position":position,'status':3})
                     c.execute("UPDATE habits SET brokenHabits = :brokenHabits  WHERE position = :position",{"position":position,'brokenHabits':brokenHabits+1})
