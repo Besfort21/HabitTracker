@@ -22,6 +22,14 @@ def maxStreakAll() -> List[Streak]:
         max.append(Streak(*result))
     return max
 
+def maxStreakAllCurrent() -> List[Habit]:
+    c.execute("select * from habits WHERE streaks = (SELECT MAX(streaks) from habits)")
+    results = c.fetchall()
+    max = []
+    for result in results:
+        max.append(Habit(*result))
+    return max
+
 def maxStreakHabit(position) -> List[Streak]:
     position -= 1
     c.execute("select * from streaks WHERE position = :position and streaks = (SELECT MAX(streaks) from streaks)",{'position':position})
@@ -30,6 +38,7 @@ def maxStreakHabit(position) -> List[Streak]:
     for result in results:
         max.append(Streak(*result))
     return max
+
 
 def mostStruggle() ->List[Habit]:
     c.execute("select * from habits ORDER BY brokenhabits DESC")

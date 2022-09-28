@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.table import Table
 from model import Habit,Streak
 from db import insertHabit,getAllHabits,deleteHabit,completeHabit,getAllStreaks,conn
-from analytics import maxStreakAll,maxStreakHabit,mostStruggle,samePeriodicity
+from analytics import maxStreakAll, maxStreakAllCurrent,maxStreakHabit,mostStruggle,samePeriodicity
 
 console = Console()
 
@@ -104,6 +104,19 @@ def showMaxStreak():
     max = maxStreakAll()
 
     console.print("[bold magenta]Max Streak[/bold magenta]!")
+
+    table = Table(show_header=True, header_style="bold blue")
+    table.add_column("Max Streak", min_width=20)
+    table.add_column('Habit Position',min_width=20)
+    for i in max:
+        table.add_row(str(i.streaks),str(i.position+1))
+    console.print(table)
+
+@app.command(short_help='show max streak')
+def showCurrentMaxStreak():
+    max = maxStreakAllCurrent()
+
+    console.print("[bold magenta]Max Current Streak[/bold magenta]!")
 
     table = Table(show_header=True, header_style="bold blue")
     table.add_column("Max Streak", min_width=20)
