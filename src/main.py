@@ -58,6 +58,20 @@ def showStreaks():
     console.print(table)
 
 
+@app.command(short_help='show current streaks')
+def showCurrentStreaks():
+    habits = getAllHabits(c)
+    
+    console.print("[bold magenta]Current Streaks[/bold magenta]!")
+
+    table = Table(show_header=True, header_style="bold blue")
+    table.add_column("Current Streak", min_width=20)
+    table.add_column('Habit Position',min_width=20)
+    for habit in habits:
+        table.add_row(str(habit.streaks),str(habit.position+1))
+    console.print(table)
+
+
 @app.command(short_help='add an item with periodicity "daily" or "weekly" ')
 def add(task: str, periodicity: str):
     typer.echo(f"adding {task}, {periodicity}")
