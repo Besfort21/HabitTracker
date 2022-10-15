@@ -43,7 +43,7 @@ def show():
         table.add_row(str(idx), habit.task,periodicity_str, is_done_str,str(habit.dateAdded),str(habit.datePeriod),str(habit.dateCompleted))
     console.print(table)
 
-#Table for Streaks
+#Table for Streaks.
 @app.command(short_help='show all streaks')
 def showStreaks():
     streaks = getAllStreaks(c)
@@ -57,7 +57,7 @@ def showStreaks():
         table.add_row(str(streak.streaks),str(streak.position+1))
     console.print(table)
 
-
+#Table for the streaks of the habits currently shown in the main table.
 @app.command(short_help='show current streaks')
 def showCurrentStreaks():
     habits = getAllHabits(c)
@@ -74,11 +74,27 @@ def showCurrentStreaks():
 
 @app.command(short_help='add an item with periodicity "daily" or "weekly" ')
 def add(task: str, periodicity: str):
+    """
+    Function to be called when the user wants to add a habit.
+    Creates a habit object.
+    Calls the insertHabit function from the database module.
+    Checks if the Input equals to either daily or weekly.
+
+    Parameters:
+    task (str): description of the habit.
+    periodicity(str): describing wether a habit is a daily or weekly habit.
+  
+    """
+
     typer.echo(f"adding {task}, {periodicity}")
     if periodicity.lower() == "daily":
         periodicity = 1
     elif periodicity.lower() == "weekly":
         periodicity = 7
+    else:
+        raise ValueError("You need to enter either 'daily' or 'weekly' ")
+        
+    
     habit = Habit(task, periodicity)
     insertHabit(habit,c)
     show()
@@ -86,6 +102,14 @@ def add(task: str, periodicity: str):
 
 @app.command(short_help='delete an item')
 def delete(position: int):
+    """
+    Function to be called when the user wants to delete a habit.
+
+    Parameters:
+    position: indicating the position of the habit to be deleted.
+  
+    """
+
     typer.echo(f"deleting {position}")
     # indices in Table begin at 1, but in database at 0
     deleteHabit(position-1,c)
@@ -93,6 +117,14 @@ def delete(position: int):
 
 @app.command(short_help='complete an item')
 def complete(position: int):
+    """
+    Function to be called when the user wants to complete a habit.
+
+    Parameters:
+    position: indicating the position of the habit to be deleted.
+  
+    """
+
     typer.echo(f"complete {position}")
     completeHabit(position-1,c)
     show()
